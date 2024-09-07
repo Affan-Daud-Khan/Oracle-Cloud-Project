@@ -1,0 +1,63 @@
+- hosts: all
+  become: yes
+  tasks:
+    - name: update/upgrade apt packages
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: Install Node.js, PHP, and other required dependencies
+      apt:
+        name:
+          - nodejs
+          - npm
+          - php
+          - php-mysql
+          - mysql-server
+          - php-cli
+        state: present
+
+    - name: clone the frontend repository
+      git:
+        repo: 'https://github.com/username/nuxtjs-project.git'
+        dest: /var/www/nuxtjs
+        version: master
+
+    - name: Install Nuxt.js dependencies
+      npm:
+        path: /var/www/nuxtjs
+        state: present
+
+    - name: clone the backend repository
+      git:
+        repo: 'https://github.com/username/laravel-project.git'
+        dest: /var/www/laravel
+        version: master
+
+    - name: Install Laravel dependencies
+      composer:
+        command: install
+        working_dir: /var/www/laravel
+
+    - name: laravel environment file for configurations
+      copy:
+        src: #path of .env
+        dest: /var/www/laravel/.env
+
+    - name: Laravel application key
+      command: php artisan key:generate
+      args:
+        chdir: /var/www/laravel
+
+    - name: start the frontend service
+      npm:
+        path: /var/www/nuxtjs
+        state: started
+        background: yes
+
+    - name: start MySQL service
+      systemd:
+        name: mysql
+        state: started
+
+# frontend and backend can be exposed using nginx or with ingress in Kubernetes (domains will be required)        

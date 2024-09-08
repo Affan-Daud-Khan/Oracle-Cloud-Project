@@ -15,6 +15,8 @@
           - php-mysql
           - mysql-server
           - php-cli
+          - composer
+          - git
         state: present
 
     - name: clone the frontend repository
@@ -39,15 +41,15 @@
         command: install
         working_dir: /var/www/laravel
 
-    - name: laravel environment file for configurations
-      copy:
-        src: #path of .env
-        dest: /var/www/laravel/.env
-
     - name: Laravel application key
       command: php artisan key:generate
       args:
         chdir: /var/www/laravel
+
+    - name: laravel environment file for configurations
+      copy:
+        src: #path of .env
+        dest: /var/www/laravel/.env    
 
     - name: start the frontend service
       npm:

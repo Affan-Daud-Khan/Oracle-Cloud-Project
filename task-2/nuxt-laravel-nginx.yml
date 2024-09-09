@@ -40,6 +40,10 @@
       command: 'php artisan key:generate'
       args:
         chdir: /var/www/laravel
+    - name: laravel environment file for configurations
+      copy:
+        src: null
+        dest: /var/www/laravel/.env
     - name: configure nginx for frontend app
       copy:
         dest: /etc/nginx/sites-available/nuxtjs
@@ -98,10 +102,6 @@
       file:
         path: /etc/nginx/sites-enabled/default
         state: absent
-    - name: laravel environment file for configurations
-      copy:
-        src: null
-        dest: /var/www/laravel/.env
     - name: start the frontend service
       npm:
         path: /var/www/nuxtjs

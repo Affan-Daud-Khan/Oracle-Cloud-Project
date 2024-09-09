@@ -1,0 +1,60 @@
+- hosts: db-vm
+  become: yes
+  vars:
+    mysql_root_password: "secure-sql-password"
+    mongo_bind_ip: "127.0.0.1" #localhost for internal
+
+  tasks:
+    - name: update apt repository
+      apt:
+        update_cache: yes
+
+    - name: Install MySQL
+      apt:
+        name: mysql-server
+        state: present
+
+    - name: set MySQL root password and apply security
+      mysql_secure_installation:
+        login_user: root
+        login_password: ""
+        root_password: "{{ mysql_root_password }}"
+        root_password_new: "{{ mysql_root_password }}"
+        change_root_password: yes
+        disallow_root_login_remotely: yes
+
+    - name: Install redis
+      apt:
+        name: redis-server
+        state: present
+
+# remote connections can be allowed for redis cache
+    - name: configure redis
+      lineinfile:
+        path: /etc/redis/redis.conf
+        regexp: '^#?bind .*'
+        line: 'bind 127.0.0.1'
+        notify: restart Redis
+
+    - name: Install MongoDB
+      apt:
+        name: mongodb
+        state: present
+
+# remote connections can be allowed
+    - name: configure MongoDB
+      lineinfile:
+        path: /etc/mongod.conf
+        regexp: '^#?bindIp:.*'
+        line: "  bindIp: {{ mongo_bind_ip }}"
+        notify: restart MongoDB
+
+  handlers:
+    - name: restart Redis
+      service:
+        name: redis-server
+        state: restarted
+    - name: restart MongoDB
+      service:
+        name: mongod
+        state: restarted

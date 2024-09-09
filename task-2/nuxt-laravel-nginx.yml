@@ -111,7 +111,7 @@
       systemd:
         name: mysql
         state: started
-    - name: start nginx service
+    - name: restart nginx
       systemd:
         name: nginx
         state: restarted

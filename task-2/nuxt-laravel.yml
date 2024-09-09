@@ -62,4 +62,4 @@
         name: mysql
         state: started
 
-# frontend and backend can be exposed using nginx or with ingress in Kubernetes (domains will be required)        
+# frontend and backend can be exposed using nginx or with ingress in Kubernetes (domains and ssl certs will be required)        

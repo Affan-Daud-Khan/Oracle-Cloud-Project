@@ -1,6 +1,0 @@
-tenancy_ocid     = "tenancy-ocid>"
-user_ocid        = "<user-ocid>"
-fingerprint      = "<fingerprint>"
-private_key_path = "<private-key-path>"
-region           = "<region>"
-compartment_ocid = "<compartment-ocid>"

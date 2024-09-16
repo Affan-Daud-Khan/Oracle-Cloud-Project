@@ -1,4 +1,4 @@
-- hosts: app-vm
+- hosts: application_server
   become: yes
   tasks:
     - name: Install Java

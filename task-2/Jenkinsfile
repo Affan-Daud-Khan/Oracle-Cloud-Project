@@ -1,0 +1,35 @@
+pipeline {
+    agent any
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/rhenaldkarrel/laravel-nuxt-app-example.git'
+            }
+        }
+        stage('Install backend dependencies') {
+            steps {
+                sh '''
+                cd app
+                composer install
+                php artisan migrate
+                '''
+            }
+        }
+        stage('Install frontend dependencies') {
+            steps {
+                sh '''
+                cd client
+                npm install
+                npm run build
+                '''
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sh '''
+                sudo systemctl restart nginx
+                '''
+            }
+        }
+    }
+}

@@ -1,0 +1,100 @@
+- hosts: application_server
+  become: yes
+  vars:
+    node_version: "14.x"
+    app_dir: "/var/www/laravel-nuxt-app-example"
+
+  tasks:
+    - name: update apt repositories
+      apt:
+        update_cache: yes
+
+    - name: Install required packages
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - nginx
+        - git
+        - nodejs
+        - npm
+        - curl
+        - php
+        - composer
+        - unzip
+        - php-cli
+        - php-mbstring
+        - php-xml
+        - php-zip
+
+
+
+    - name: clean existing app directory if present
+      file:
+        path: /var/www/laravel-nuxt-app-example
+        state: absent
+      become: yes
+
+    - name: clone Laravel-Nuxt app from GitHub
+      git:
+        repo: 'https://github.com/rhenaldkarrel/laravel-nuxt-app-example.git'
+        dest: /var/www/laravel-nuxt-app-example
+      become: yes
+    
+    # - name: Run composer update
+    #   command: composer update
+    #   args:
+    #     chdir: "{{ app_dir }}/app"
+    #   become: yes
+
+    - name: Install Laravel dependencies using Composer
+      command: composer install
+      args:
+        chdir: "{{ app_dir }}/app"
+      become: yes
+
+    - name: set Laravel permissions
+      file:
+        path: "{{ app_dir }}/storage"
+        state: directory
+        mode: '0775'
+        owner: www-data
+        group: www-data
+
+    - name: Install Node.js for Nuxt.js
+      shell: curl -fsSL https://deb.nodesource.com/setup_{{ node_version }} | bash -
+      ignore_errors: yes
+
+    - name: Install Nuxt.js dependencies
+      command: npm install
+      args:
+        chdir: "{{ app_dir }}/client"
+
+    - name: build Nuxt.js app
+      command: npm run build
+      args:
+        chdir: "{{ app_dir }}/client"
+
+    - name: configure Nginx for the the app
+      template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/sites-available/laravel_nuxt
+      notify:
+        - restart Nginx
+
+    - name: enable Nginx site
+      file:
+        src: /etc/nginx/sites-available/laravel_nuxt
+        dest: /etc/nginx/sites-enabled/laravel_nuxt
+        state: link
+
+    - name: remove default Nginx config
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+
+  handlers:
+    - name: restart Nginx
+      service:
+        name: nginx
+        state: restarted

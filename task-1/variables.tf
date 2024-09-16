@@ -18,3 +18,5 @@ variable "compartment_id" {
   type = string
   default = "<value>"
 }
+
+ # I will use a vault to store any sensitive info in Staging and Prod

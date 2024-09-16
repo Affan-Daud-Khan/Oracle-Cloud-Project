@@ -1,0 +1,47 @@
+- hosts: database_server
+  become: yes
+  vars:
+    mongo_bind_ip: "127.0.0.1"  # internal use
+
+  tasks:
+    - name: update apt repository
+      apt:
+        update_cache: yes
+
+    - name: add MongoDB repository key
+      apt_key:
+        url: https://www.mongodb.org/static/pgp/server-6.0.asc
+        state: present
+
+    - name: add MongoDB repository
+      apt_repository:
+        repo: "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu {{ ansible_distribution_release }}/mongodb-org/6.0 multiverse"
+        state: present
+
+    - name: update apt cache after MongoDB repository is added
+      apt:
+        update_cache: yes
+
+    - name: Install MongoDB
+      apt:
+        name: mongodb-org
+        state: present
+
+    - name: ensure MongoDB is running and enabled
+      systemd:
+        name: mongod
+        state: started
+        enabled: yes
+
+    - name: configure MongoDB for internal access only
+      lineinfile:
+        path: /etc/mongod.conf
+        regexp: '^#?bindIp:.*'
+        line: "  bindIp: {{ mongo_bind_ip }}"
+      notify: restart MongoDB
+
+  handlers:
+    - name: restart MongoDB
+      service:
+        name: mongod
+        state: restarted

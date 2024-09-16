@@ -3,6 +3,8 @@ variable "compartment_id" {
   default = "<value>"
 }
 
+ # I will use a vault to store any sensitive info in Staging and Prod
+
 provider "oci" {
     auth = "InstancePrincipal"
     region="me-jeddah-1"
@@ -37,13 +39,13 @@ resource "oci_core_route_table" "public_route_table" {
   }
 }
 
-# Security list for public subnets
+# security list for public subnets
 resource "oci_core_security_list" "public_security_list" {
   vcn_id = oci_core_vcn.manafa-vcn.id
   display_name = "Public-Security-List"
   compartment_id = var.compartment_id
 
-  # Allow ingress for SSH and HTTP/HTTPS
+  # allow ingress for SSH and HTTP/HTTPS
   ingress_security_rules {
     protocol = "6"
     source = "0.0.0.0/0"
@@ -71,20 +73,20 @@ resource "oci_core_security_list" "public_security_list" {
     }
   }
 
-  # Allow all outbound traffic
+  # allow all outbound traffic
   egress_security_rules {
     protocol = "all"
     destination = "0.0.0.0/0"
   }
 }
 
-# Security list for private subnet
+# security list for private subnet
 resource "oci_core_security_list" "private_security_list" {
   vcn_id = oci_core_vcn.manafa-vcn.id
   display_name = "Private-Security-List"
   compartment_id = var.compartment_id
 
-  # Allow ingress for MySQL, Redis, MongoDB
+  # allow ingress for MySQL, Redis, MongoDB
   ingress_security_rules {
     protocol = "6"
     source = "10.0.1.0/24"
@@ -112,14 +114,14 @@ resource "oci_core_security_list" "private_security_list" {
     }
   }
 
-  # Allow all outbound traffic
+  # allow all outbound traffic
   egress_security_rules {
     protocol = "all"
     destination = "0.0.0.0/0"
   }
 }
 
-# Public subnet for Ansible VM
+# public subnet for Ansible VM
 resource "oci_core_subnet" "ansible_vm_subnet" {
   vcn_id = oci_core_vcn.manafa-vcn.id
   cidr_block = "10.0.1.0/24"
@@ -131,7 +133,7 @@ resource "oci_core_subnet" "ansible_vm_subnet" {
   prohibit_public_ip_on_vnic = false
 }
 
-# Public subnet for application VM
+# public subnet for application VM
 resource "oci_core_subnet" "app_vm_subnet" {
   vcn_id = oci_core_vcn.manafa-vcn.id
   cidr_block = "10.0.2.0/24"
@@ -143,7 +145,7 @@ resource "oci_core_subnet" "app_vm_subnet" {
   prohibit_public_ip_on_vnic = false
 }
 
-# Private subnet for DB VM
+# private subnet for DB VM
 resource "oci_core_subnet" "db_vm_subnet" {
   vcn_id = oci_core_vcn.manafa-vcn.id
   cidr_block = "10.0.3.0/24"

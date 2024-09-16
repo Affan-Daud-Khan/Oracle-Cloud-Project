@@ -1,0 +1,50 @@
+- name: provision MySQL, Redis, and MongoDB on Database VM
+  hosts: database_server
+  become: true
+
+  tasks:
+    - name: update the apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install MySQL server
+      apt:
+        name: mysql-server
+        state: present
+    
+    - name: start and enable MySQL service
+      systemd:
+        name: mysql
+        enabled: yes
+        state: started
+
+    - name: Install Redis
+      apt:
+        name: redis-server
+        state: present
+
+    - name: start and enable Redis service
+      systemd:
+        name: redis-server
+        enabled: yes
+        state: started
+
+    - name: Install MongoDB
+      apt:
+        name: mongodb
+        state: present
+
+    - name: start and enable MongoDB service
+      systemd:
+        name: mongodb
+        enabled: yes
+        state: started
+
+    - name: ensure that all the services are running
+      service:
+        name: "{{ item }}"
+        state: started
+      loop:
+        - mysql
+        - redis-server
+        - mongodb
